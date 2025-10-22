@@ -241,7 +241,7 @@ class WarpRemover:
         # Temp files
         self.print_emoji("🧹", "Clearing temporary files...")
         temp_dir = Path(os.environ.get('TEMP', 'C:/Windows/Temp'))
-        self.safe_remove(str(temp_dir / "*WarpSetup.exe"), "temp files")
+        self.safe_remove(str(temp_dir / "*WarpSetup.exe"))
 
         # Start Menu link
         self.print_emoji("🔗", "Removing Start Menu link...")
