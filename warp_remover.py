@@ -72,6 +72,17 @@ class WarpRemover:
             paths = [str(path_pattern)] if path_pattern.exists() else []
             
         for path in paths:
+            # Safety check: Don't delete the script's own directory or current working directory
+            try:
+                path_obj = Path(path).resolve()
+                cwd = Path.cwd().resolve()
+                script_dir = Path(__file__).parent.resolve()
+                if path_obj == cwd or path_obj == script_dir or cwd.is_relative_to(path_obj) or script_dir.is_relative_to(path_obj):
+                    self.print_emoji("🛡️", f"Skipping project/script directory: {path}")
+                    continue
+            except Exception:
+                pass
+
             try:
                 if os.path.isdir(path):
                     shutil.rmtree(path)
@@ -149,7 +160,36 @@ class WarpRemover:
         # Downloads
         self.safe_remove(str(self.home / "Downloads/*warp*"))
         self.safe_remove(str(self.home / "Downloads/*Warp*"))
+
+        # Group Containers
+        self.safe_remove(str(self.home / "Library/Group Containers/*warp*"))
+        self.safe_remove(str(self.home / "Library/Group Containers/*Warp*"))
+        self.safe_remove(str(self.home / "Library/Group Containers/2BBY89MBSN.dev.warp"))
+
+        # Application Scripts
+        self.safe_remove(str(self.home / "Library/Application Scripts/*warp*"))
+        self.safe_remove(str(self.home / "Library/Application Scripts/*Warp*"))
+        self.safe_remove(str(self.home / "Library/Application Scripts/2BBY89MBSN.dev.warp"))
+
+        # Comet Browser/App Data (Warp related)
+        self.print_emoji("🌐", "Removing Warp data from Comet browser/app...")
+        self.safe_remove(str(self.home / "Library/Application Support/Comet/*/IndexedDB/https_app.warp.dev*"))
+        self.safe_remove(str(self.home / "Library/Application Support/Comet/*/Extensions/*warp*"))
+        # Specific Warp extension ID in Comet
+        self.safe_remove(str(self.home / "Library/Application Support/Comet/*/Extensions/mjdcklhepheaaemphcopihnmjlmjpcnh"))
+        # Specific extension ID found in logs if it contains warp assets
+        # We'll be careful and only remove if path contains warp, which the glob above covers if the extension folder itself doesn't say warp but contents do. 
+        # But safe_remove with glob only matches the path string.
+        # The log showed: .../Extensions/mjdcklhepheaaemphcopihnmjlmjpcnh/.../warpscript...
+        # We can't easily glob inside the extension content with safe_remove's current logic unless we walk.
+        # But we can try to remove the specific IndexedDB which is the main data.
         
+        # Clear Launch Services database
+        
+        # Sentry Crash Reports
+        self.safe_remove(str(self.home / "Library/Caches/SentryCrash/Warp"))
+        self.safe_remove(str(self.home / "Library/Caches/SentryCrash/dev.warp.Warp-Stable"))
+
         # Clear Launch Services database
         self.print_emoji("📊", "Clearing Launch Services database...")
         try:
@@ -320,7 +360,7 @@ class WarpRemover:
                             if any('warp' in part.lower() for part in path_parts):
                                 full_path = os.path.join(root, item)
                                 # Exclude common false positives
-                                if not any(fp in full_path.lower() for fp in ['skimage', 'python', 'hp', 'google', 'chrome']):
+                                if not any(fp in full_path.lower() for fp in ['skimage', 'python', 'hp', 'google', 'chrome', 'skwarpgeometry', 'prism-warpscript', 'warp-bypass', 'libdisplaywarpsupport', 'glutwarppointer']):
                                     remaining_items += 1
                                     self.print_emoji("👀", f"Found: {full_path}")
                 except (PermissionError, OSError):
