@@ -73,6 +73,17 @@ class WarpIdentityReset:
             paths = [str(path_pattern)] if path_pattern.exists() else []
             
         for path in paths:
+            # Safety check: Don't delete the script's own directory or current working directory
+            try:
+                path_obj = Path(path).resolve()
+                cwd = Path.cwd().resolve()
+                script_dir = Path(__file__).parent.resolve()
+                if path_obj == cwd or path_obj == script_dir or cwd.is_relative_to(path_obj) or script_dir.is_relative_to(path_obj):
+                    self.print_emoji("🛡️", f"Skipping project/script directory: {path}")
+                    continue
+            except Exception:
+                pass
+
             try:
                 if os.path.isdir(path):
                     shutil.rmtree(path)
@@ -150,6 +161,27 @@ class WarpIdentityReset:
         self.print_emoji("🔐", "Clearing HTTP storage...")
         self.safe_remove(str(self.home / "Library/HTTPStorages/*warp*"), "HTTP storage")
         self.safe_remove(str(self.home / "Library/HTTPStorages/*Warp*"), "HTTP storage")
+        
+        # Group Containers - shared data
+        self.print_emoji("📦", "Clearing group containers...")
+        self.safe_remove(str(self.home / "Library/Group Containers/*warp*"), "group containers")
+        self.safe_remove(str(self.home / "Library/Group Containers/*Warp*"), "group containers")
+        self.safe_remove(str(self.home / "Library/Group Containers/2BBY89MBSN.dev.warp"), "group containers")
+
+        # Application Scripts
+        self.safe_remove(str(self.home / "Library/Application Scripts/*warp*"), "app scripts")
+        self.safe_remove(str(self.home / "Library/Application Scripts/*Warp*"), "app scripts")
+        self.safe_remove(str(self.home / "Library/Application Scripts/2BBY89MBSN.dev.warp"), "app scripts")
+
+        # Comet Browser/App Data (Warp related)
+        self.print_emoji("🌐", "Clearing Comet browser data...")
+        self.safe_remove(str(self.home / "Library/Application Support/Comet/*/IndexedDB/https_app.warp.dev*"), "Comet DB")
+        self.safe_remove(str(self.home / "Library/Application Support/Comet/*/Extensions/*warp*"), "Comet Ext")
+        self.safe_remove(str(self.home / "Library/Application Support/Comet/*/Extensions/mjdcklhepheaaemphcopihnmjlmjpcnh"), "Comet Warp Ext")
+
+        # Sentry Crash Reports
+        self.safe_remove(str(self.home / "Library/Caches/SentryCrash/Warp"), "crash reports")
+        self.safe_remove(str(self.home / "Library/Caches/SentryCrash/dev.warp.Warp-Stable"), "crash reports")
         
         # Clear Launch Services database (helps reset file associations)
         self.print_emoji("📊", "Updating system database...")
