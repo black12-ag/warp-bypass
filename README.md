@@ -75,6 +75,20 @@ python3 warp_remover.py    # macOS/Linux
 python warp_remover.py     # Windows
 ```
 
+## 🪟 Windows Users - No Python? No Problem!
+
+If you don't have Python installed or are having trouble, use the **native batch script**:
+
+1. Download `windows_remove.bat`
+2. Right-click and select **"Run as Administrator"**
+3. Follow the prompts
+
+This script will:
+- Kill Warp processes
+- Remove all Warp files and folders
+- Clean Registry keys
+- **✨ NEW:** Clean Warp data from Chrome, Edge, Brave, and Comet browsers!
+
 ## 🐧 Linux Users - Standalone Scripts
 
 ### Quick One-Liner Commands
